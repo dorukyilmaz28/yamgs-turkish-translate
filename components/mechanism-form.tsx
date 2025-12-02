@@ -173,7 +173,7 @@ export default function MechanismForm({ form }: { form: UseFormReturn<any> }) {
                 name="canId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>CAN Kimliği / CAN Numarası</FormLabel>
+                    <FormLabel>CAN ID</FormLabel>
                     <FormControl>
                       <Input type="number" {...field} onChange={(e) => handleNumberChange(e, field.onChange)} />
                     </FormControl>
@@ -197,7 +197,7 @@ export default function MechanismForm({ form }: { form: UseFormReturn<any> }) {
                         onChange={(e) => handleNumberChange(e, field.onChange)}
                       />
                     </FormControl>
-                    <FormDescription>Motorun 1 mekanizma dönüşü için kaç kez döndüğü. Örnek: 15 → mekanizma 1 tur atarken motor 15 tur atıyor.</FormDescription>
+                    <FormDescription>Motorun, mekanizmanın 1 tam turu için kaç tur attığını gösterir. Örneğin: Dişli oranı 15 ise, mekanizma 1 tur attığında motor 15 tur döner.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -746,7 +746,7 @@ export default function MechanismForm({ form }: { form: UseFormReturn<any> }) {
                     name="elevatorParams.hardLimitMin"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Alt Sert Limit (m)</FormLabel>
+                        <FormLabel>Minimum Yükseklik</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -767,7 +767,7 @@ export default function MechanismForm({ form }: { form: UseFormReturn<any> }) {
                     name="elevatorParams.hardLimitMax"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Üst Sert Limit (m)</FormLabel>
+                        <FormLabel>Maksimum Yükseklik</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -835,7 +835,7 @@ export default function MechanismForm({ form }: { form: UseFormReturn<any> }) {
                   name="elevatorParams.drumRadius"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tambur/Dişli Yarıçapı (m)</FormLabel>
+                      <FormLabel>Dişli Yarıçapı</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
