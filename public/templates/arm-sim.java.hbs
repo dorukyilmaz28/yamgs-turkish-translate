@@ -1,0 +1,82 @@
+package frc.robot.subsystems;
+
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color8Bit;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.math.util.Units;
+
+/**
+* Simülasyonda kol alt sistemi için görselleştirme.
+*/
+public class {{subsystemName}}Sim extends SubsystemBase {
+private final {{subsystemName}} arm;
+
+// Simülasyon Ekranı
+private final Mechanism2d mech;
+private final MechanismRoot2d root;
+private final MechanismLigament2d armMech;
+
+// Görselleştirme sabit değerleri
+private final double BASE_WIDTH = 40.0;
+private final double BASE_HEIGHT = 20.0;
+private final double TOWER_HEIGHT = 30.0;
+private final double ARM_WIDTH = 10.0;
+
+// Arm parametreleri
+private final double armLength;
+private final double visualScaleFactor;
+
+/**
+ * Simülasyonda kol alt sistemi için görselleştirme.
+ * 
+ * @param armSubsystem Görselleştirmek için kol alt sistemi
+ */
+public {{subsystemName}}Sim({{subsystemName}} armSubsystem) {
+  this.arm = armSubsystem;
+  
+  // Subsistemden Kol Uzunluğu al (in meters)
+  armLength = {{armLength}};
+  
+  // Görselleştirmeyi makul sınırlar içinde tutmak için ölçek faktörünü hesaplayın
+  visualScaleFactor = 200.0 / armLength; // ~200 pixel kadar büyütür
+  
+  // Simülasyon Ekranı Yaratır
+  mech = new Mechanism2d(400, 400);
+  root = mech.getRoot("ArmRoot", 200, 200);
+  
+  // Kol tabanı yaratır
+  MechanismLigament2d armBase = root.append(
+      new MechanismLigament2d("Base", BASE_WIDTH, 0, BASE_HEIGHT, new Color8Bit(Color.kDarkGray)));
+  
+  // Kule ekle
+  MechanismLigament2d tower = armBase.append(
+      new MechanismLigament2d("Tower", TOWER_HEIGHT, 90, BASE_HEIGHT / 2, new Color8Bit(Color.kGray)));
+  
+  // Kol pivot noktasını ekle
+  MechanismLigament2d pivot = tower.append(
+      new MechanismLigament2d("Pivot", 5, 0, 5, new Color8Bit(Color.kBlack)));
+  
+  // Kolu ekle
+  armMech = pivot.append(
+      new MechanismLigament2d("Arm", armLength * visualScaleFactor, 0, ARM_WIDTH, new Color8Bit(Color.kBlue)));
+  
+  // Görselleştirmeyi başlat
+  SmartDashboard.putData("Arm Sim", mech);
+}
+
+@Override
+public void periodic() {
+  // Update arm angle
+  double currentAngleRad = arm.getSimulation().getAngleRad();
+  armMech.setAngle(Units.radiansToDegrees(currentAngleRad));
+  
+  // Telemetri Datasını Ekler
+  SmartDashboard.putNumber("Arm Angle (deg)", Units.radiansToDegrees(currentAngleRad));
+  SmartDashboard.putNumber("Arm Velocity (deg/s)", Units.radiansToDegrees(arm.getSimulation().getVelocityRadPerSec()));
+  SmartDashboard.putNumber("Arm Current (A)", arm.getSimulation().getCurrentDrawAmps());
+}
+}
