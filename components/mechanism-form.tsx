@@ -410,7 +410,7 @@ export default function MechanismForm({ form }: { form: UseFormReturn<any> }) {
                             onChange={(e) => handleNumberChange(e, field.onChange)}
                           />
                         </FormControl>
-                        <FormDescription>Maksimum hız ({mechanismType == "Elevator" ? "m/s" : "rad/s"}). Mekanizmanın ulaşmasına izin verilen en yüksek hız.</FormDescription>
+                        <FormDescription>Mekanizmanın izin verilen en yüksek doğrusal hızı (m/s).</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -431,7 +431,7 @@ export default function MechanismForm({ form }: { form: UseFormReturn<any> }) {
                             onChange={(e) => handleNumberChange(e, field.onChange)}
                           />
                         </FormControl>
-                        <FormDescription>Maksimum ivme ({mechanismType == "Elevator" ? "m/s²" : "rad/s²"}). Sistemin izin verilen maksimum hızlanması.</FormDescription>
+                        <FormDescription>Sistemin ulaşmasına izin verilen maksimum hızlanma değeri (m/s²).</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -457,7 +457,7 @@ export default function MechanismForm({ form }: { form: UseFormReturn<any> }) {
                             onChange={(e) => handleNumberChange(e, field.onChange)}
                           />
                         </FormControl>
-                        <FormDescription>İleri konum limiti. Mekanizmanın ulaşabileceği maksimum pozisyon.</FormDescription>
+                        <FormDescription>Mekanizmanın erişebileceği en yüksek konum sınırı.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -478,7 +478,7 @@ export default function MechanismForm({ form }: { form: UseFormReturn<any> }) {
                             onChange={(e) => handleNumberChange(e, field.onChange)}
                           />
                         </FormControl>
-                        <FormDescription>Geri konum limiti. Mekanizmanın ulaşabileceği minimum pozisyon.</FormDescription>
+                        <FormDescription>Mekanizmanın erişebileceği en düşük konum sınırı.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -504,7 +504,7 @@ export default function MechanismForm({ form }: { form: UseFormReturn<any> }) {
                             onChange={(e) => handleNumberChange(e, field.onChange)}
                           />
                         </FormControl>
-                        <FormDescription>Statik sürtünme voltajı. Mekanizmanın ilk harekete geçmesi için gereken minimum voltaj.</FormDescription>
+                        <FormDescription>Mekanizmanın harekete başlayabilmesi için gereken minimum voltaj (statik sürtünme telafisi).</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -525,7 +525,7 @@ export default function MechanismForm({ form }: { form: UseFormReturn<any> }) {
                             onChange={(e) => handleNumberChange(e, field.onChange)}
                           />
                         </FormControl>
-                        <FormDescription>Hız feedforward katsayısı. Belirli bir hızı korumak için gereken voltaj.</FormDescription>
+                        <FormDescription>Sabit bir hızı sürdürmek için gereken voltajı belirleyen hız katsayısı.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -546,7 +546,7 @@ export default function MechanismForm({ form }: { form: UseFormReturn<any> }) {
                             onChange={(e) => handleNumberChange(e, field.onChange)}
                           />
                         </FormControl>
-                        <FormDescription>İvme feedforward katsayısı. İvmelenmek için gereken ek voltaj.</FormDescription>
+                        <FormDescription>İvmelenme sırasında ihtiyaç duyulan ek voltajı belirleyen ivme katsayısı.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -568,7 +568,7 @@ export default function MechanismForm({ form }: { form: UseFormReturn<any> }) {
                               onChange={(e) => handleNumberChange(e, field.onChange)}
                             />
                           </FormControl>
-                          <FormDescription>Yerçekimi kompanzasyonu voltajı. Kol veya elevator gibi mekanizmaların ağırlığını dengelemek için gereken sabit voltaj.</FormDescription>
+                          <FormDescription>Yerçekiminin etkisini dengelemek için mekanizmaya uygulanan sabit voltaj (özellikle kol ve elevator sistemleri için).</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
