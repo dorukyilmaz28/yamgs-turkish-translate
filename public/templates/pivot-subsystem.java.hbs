@@ -24,7 +24,7 @@ import java.util.function.DoubleSupplier;
 {{{motorControllerImports}}}
 
 /**
-* {{motorControllerType}} ile {{motorType}} motor kullanan Pivot Subsistemi
+* {{motorControllerType}} ile {{motorType}} motor kullanan Pivot Alt Sistemi
 */
 @Logged(name = "{{ntKey}}")
 public class {{subsystemName}} extends SubsystemBase {
@@ -43,8 +43,8 @@ private final double maxVelocity = {{maxVelocity}}; // radyan/saniye
 private final double maxAcceleration = {{maxAcceleration}}; // radyan/saniye²
 private final boolean brakeMode = {{brakeMode}};
  {{#if enableSoftLimits}}
- private final double forwardSoftLimit = {{forwardSoftLimit}}; // maximum radyan değeri için açı değeri
- private final double reverseSoftLimit = {{reverseSoftLimit}}; // minimum radyan değeri için açı değeri
+ private final double forwardSoftLimit = {{forwardSoftLimit}}; // Maksimum açı (radyan)
+ private final double reverseSoftLimit = {{reverseSoftLimit}}; // Minimum açı (radyan)
  {{/if}}
  private final boolean enableStatorLimit = {{enableStatorLimit}};
  private final double statorCurrentLimit = {{statorCurrentLimit}};
@@ -84,7 +84,7 @@ private final double CONTROL_LOOP_FREQUENCY = 100.0; // Hz
 private final SingleJointedArmSim pivotSim;
 
 /**
- * Yeni bir Pivot Subsistemi oluşturur.
+ * Yeni bir pivot alt sistemi oluşturur
  */
 public {{subsystemName}}() {
   // Motor kontrolcüsünü başlat
@@ -95,8 +95,8 @@ public {{subsystemName}}() {
   pivotSim = new SingleJointedArmSim(
     dcMotor, // Motor tipi
     gearRatio,
-    0.01, // Kolun moment of inertia - Kol parametreleri olmadığı için küçük değer
-    0.1, // Kol uzunluğu (m) - Kol parametreleri olmadığı için küçük değer
+    0.01, // Atalet momenti - Pivot parametreleri olmadığı için küçük değer
+    0.1, // Kol uzunluğu (m) - Pivot parametreleri olmadığı için küçük değer
     Units.degreesToRadians(-90), // Minimum açı (radyan)
     Units.degreesToRadians(90), // Maksimum açı (radyan)
     false, // Yerçekimi simülesi - Pivot için yerçekimi devre dışı
@@ -104,15 +104,15 @@ public {{subsystemName}}() {
   );
 
   {{#if isSparkController}}
-  // Profillenmiş PID kontrolcüsünü başlat
-  // Radyanları dönüştürerek kısıtlamalar için
+  // ProfiledPIDController'ı başlat
+  // Kısıtlamalar için radyandan rotasyona dönüştür
   double maxVelocityRotations = maxVelocity / (2.0 * Math.PI);
   double maxAccelerationRotations = maxAcceleration / (2.0 * Math.PI);
   
   constraints = new TrapezoidProfile.Constraints(maxVelocityRotations, maxAccelerationRotations);
   profiledPIDController = new ProfiledPIDController(kP, kI, kD, constraints);
   
-  // Notifier kullanarak ayrı bir thread'de kontrol döngüsünü başlat
+  // Notifier kullanarak ayrı bir thread'de kontrol döngüsünü başlatır
   controlLoop = new Notifier(this::controlLoopFn);
   controlLoop.startPeriodic(1.0 / CONTROL_LOOP_FREQUENCY);
   {{/if}}
@@ -120,9 +120,8 @@ public {{subsystemName}}() {
 
 {{#if isSparkController}}
 /**
- * Sabit frekansta çalışan kontrol döngüsü fonksiyonu.
- * SparkMAX ve SparkFlex kontrolcülerini uygulamak için kullanılır.
- * Ana robot döngüsü dışında kapalı döngü kontrolü.
+ * Sabit frekansta çalışan kontrol döngüsü
+ * Bu; SparkMax ve SparkFlex kontrolcülerini ana robot döngüsü dışında, kapalı-döngü içinde yerine getirmek amacıyla kullanılır.
  */
 private void controlLoopFn() {
   switch (currentControlMode) {
@@ -140,20 +139,20 @@ private void controlLoopFn() {
       double accel = profiledPIDController.getSetpoint().velocity - currentVel;
       double velFeedforwardOutput = feedforward.calculate(0, targetVelocity, accel); // Pivot için gravitasyon kompenzasyonu gerekmez
       
-      // Birleştirilmiş PID çıkışını ve ileri beslemeyi motora uygulaması.
+      // Birleşmiş PID çıkışını ve feedforward'ını motora uygular
       double velocityVoltage = velOutput + velFeedforwardOutput;
       motor.setVoltage(velocityVoltage);
       break;
       
     case OPEN_LOOP:
     default:
-      // Hiçbir şey yapma, voltaj doğrudan ayarlanır.
+      // Açık döngü modunda bir şey yapma, voltaj doğrudan ayarlanır
       break;
   }
 }
 
 /**
- * Alt sistem yok edildiğinde kaynakları temizleyin.
+ * Alt sistem kapatıldığında kaynakları temizleyin
  */
 @Override
   public void close() {
@@ -163,7 +162,7 @@ private void controlLoopFn() {
 {{/if}}
 
 /**
- * Simülasyon ve telemetriyi güncelle.
+ * Simülasyon ve telemetriyi günceller
  */
 @Override
 public void periodic() {
@@ -171,7 +170,7 @@ public void periodic() {
 }
 
 /**
- * Simülasyonu güncelle.
+ * Simülasyonu günceller
  */
 @Override
 public void simulationPeriodic() {
@@ -181,10 +180,10 @@ public void simulationPeriodic() {
   // pivotSim.setInput(getVoltage());
   // Motor kontrolcüsünden simülasyona giriş voltajını ayarla
    {{#if (or (eq motorControllerType 'TalonFX') (eq motorControllerType 'TalonFXS'))}}
-   // Use motor voltage for TalonFX simulation input
+   // TalonFX simülasyon girişi için motor voltajını kullanın
    pivotSim.setInput(motor.getSimState().getMotorVoltage());
    {{else}}
-   // Use getVoltage() for other controllers
+   // Diğer kontrolcüler için getVoltage() kullanır
    pivotSim.setInput(getVoltage());
    {{/if}}
 
@@ -192,27 +191,27 @@ public void simulationPeriodic() {
   pivotSim.update(0.020);
   RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(pivotSim.getCurrentDrawAmps()));
 
-  double motorPosition = Radians.of(armSim.getAngleRads() * gearRatio).in(Rotations);
-  double motorVelocity = RadiansPerSecond.of(armSim.getVelocityRadPerSec() * gearRatio).in(RotationsPerSecond);
+  double motorPosition = Radians.of(pivotSim.getAngleRads() * gearRatio).in(Rotations);
+  double motorVelocity = RadiansPerSecond.of(pivotSim.getVelocityRadPerSec() * gearRatio).in(RotationsPerSecond);
   {{{motorControllerSimulationPeriodic}}}
 }
 
 /**
- * Get the current position in Rotations.
- * @return Rotasyonlardaki Konum
+ * Rotasyonlarda mevcut konumu alır.
+ * @return Rotasyonlardaki konum
  */
   {{#if logPosition}}
   @Logged(name = "Position/Rotations")
   {{/if}}
 public double getPosition() {
-  // Rotations
+  // Rotasyonlar
   {{{getPositionMethod}}}
 }
 
 {{#if (or (eq positionUnit 'Degrees') (eq positionUnit 'Radians'))}}
 /**
- * Şuanki pozisyonu {{positionUnit}} alır.
- * @return {{positionUnit}} cinsinden konum.
+ * Mevcut konumu {{positionUnit}} cinsinden alır.
+ * @return {{positionUnit}} cinsinden konum
  */
   {{#if logPosition}}
   @Logged(name = "Position/{{positionUnit}}")
@@ -240,8 +239,8 @@ public double getVelocity() {
 }
 
 /**
- * Mevcut uygulanan voltajı alın.
- * @return Applied voltage
+ * Mevcut uygulanan voltajı alır.
+ * @return Uygulanan voltaj
  */
   {{#if logVoltage}}
   @Logged(name = "Voltage")
@@ -251,8 +250,8 @@ public double getVoltage() {
 }
 
 /**
- * Mevcut motor akımını alın.
- * @return Motor current in amps
+ * Mevcut motor akımını alır.
+ * @return Motor akımı (amper cinsinden)
  */
   {{#if logCurrent}}
   @Logged(name = "Current")
@@ -262,8 +261,8 @@ public double getCurrent() {
 }
 
 /**
- * Mevcut motor sıcaklığını alın.
- * @return Motor temperature in Celsius
+ * Mevcut motor sıcaklığını alır.
+ * @return Motor sıcaklığı (Celsius cinsinden)
  */
   {{#if logTemperature}}
   @Logged(name = "Temperature")
@@ -286,12 +285,12 @@ public void setAngle(double angleDegrees) {
  * @param acceleration İvme [radyan/saniye² cinsinden]
  */
 public void setAngle(double angleDegrees, double acceleration) {
-  // Dereceleri dönüştürerek dönüş sayısına çevirir.
+  // Dereceyi radyana, sonra rotasyona çevirir
   double angleRadians = Units.degreesToRadians(angleDegrees);
   double positionRotations = angleRadians / (2.0 * Math.PI);
   
   {{#if isSparkController}}
-  // Profillenmiş PID kontrolcüsünü kullanır
+  // ProfiledPIDController kullanılır
   targetPosition = positionRotations;
   currentControlMode = ControlMode.POSITION;
   
@@ -307,7 +306,7 @@ public void setAngle(double angleDegrees, double acceleration) {
 }
 
 /**
- * Set pivot angular velocity.
+ * Pivot açısal hızını ayarlar.
  * @param velocityDegPerSec Hedef hız (derece/saniye cinsinden)
  */
 public void setVelocity(double velocityDegPerSec) {
@@ -320,12 +319,12 @@ public void setVelocity(double velocityDegPerSec) {
  * @param acceleration İvme (derece/saniye² cinsinden)
  */
 public void setVelocity(double velocityDegPerSec, double acceleration) {
-  // Convert degrees/sec to rotations/sec
+  // Derece/saniye'yi rotasyon/saniye'ye dönüştür
   double velocityRadPerSec = Units.degreesToRadians(velocityDegPerSec);
   double velocityRotations = velocityRadPerSec / (2.0 * Math.PI);
   
   {{#if isSparkController}}
-  // Use the ProfiledPIDController
+  // ProfiledPIDController kullanılır
   targetVelocity = velocityRotations;
   currentControlMode = ControlMode.VELOCITY;
   
@@ -337,7 +336,7 @@ public void setVelocity(double velocityDegPerSec, double acceleration) {
   }
   
   // Hızı doğrudan motor kontrol cihazına da uygular
-  // This ensures immediate response while the control loop refines it
+  // Bu, kontrol döngüsü onu iyileştirirken anında tepki verilmesini sağlar
   double ffVolts = feedforward.calculate(0, velocityRotations, 0); // Pivot için gravitasyon kompenzasyonu gerekmez
   motor.setVoltage(ffVolts);
   {{else}}
@@ -357,10 +356,10 @@ public void setVoltage(double voltage) {
 }
 
 /**
- * Get the pivot simulation for testing.
+ * Test için pivot simülasyonunu alır.
  * @return Pivot simülasyon modeli
  */
-public SingleJointedpivotSim getSimulation() {
+public SingleJointedArmSim getSimulation() {
   return pivotSim;
 }
 
@@ -391,7 +390,7 @@ public Command moveToAngleCommand(double angleDegrees) {
     {{/if}}
   }).until(() -> {
     double currentAngle = Units.radiansToDegrees(getPositionRadians());
-    return Math.abs(angleDegrees - currentAngle) < 2.0; // 2 degree tolerance
+    return Math.abs(angleDegrees - currentAngle) < 2.0; // 2 derece tolerans
   }).finallyDo((interrupted) -> setVelocity(0));
 }
 

@@ -24,7 +24,7 @@ import java.util.function.DoubleSupplier;
 {{{motorControllerImports}}}
 
 /**
-* {{motorControllerType}} kullanarak {{motorType}} Motorulu Kol Subsistemi
+* {{motorControllerType}} ile {{motorType}} Motorlu Kol Alt Sistemi
 */
 @Logged(name = "{{ntKey}}")
 public class {{subsystemName}} extends SubsystemBase {
@@ -50,9 +50,9 @@ public class {{subsystemName}} extends SubsystemBase {
  private final double statorCurrentLimit = {{statorCurrentLimit}};
  private final boolean enableSupplyLimit = {{enableSupplyLimit}};
  private final double supplyCurrentLimit = {{supplyCurrentLimit}};
- private final double armLength = {{armLength}}; // Metre uzunluğı
+ private final double armLength = {{armLength}}; // Metre uzunluğu
  
- // İleri bildirim
+ // İleri besleme
  private final ArmFeedforward feedforward = new ArmFeedforward(kS, kG, kV, kA);
  
  // Motor kontrolcü
@@ -69,7 +69,7 @@ public class {{subsystemName}} extends SubsystemBase {
  private double targetPosition = 0.0;
  private double targetVelocity = 0.0;
  
- // Profillenmiş PID kontrolcüsü
+ // Profiled PID Controller
  private ProfiledPIDController profiledPIDController;
  private TrapezoidProfile.Constraints constraints;
  {{/if}}
@@ -78,27 +78,27 @@ public class {{subsystemName}} extends SubsystemBase {
  private final SingleJointedArmSim armSim;
 
  /**
-  * Yeni bir Kol subsistemi yapar
+  * Yeni bir kol alt sistemi oluşturur
   */
  public {{subsystemName}}() {
-   // Motor kontrolcüyü
+   // Motor kontrolcüleri başlatır/tanımlar
    {{{motorControllerInitialization}}}
    
-   // Simülasyonu Başlat
+   // Simülasyonu başlat
    armSim = new SingleJointedArmSim(
      dcMotor, // Motor tipi
      gearRatio,
-     SingleJointedArmSim.estimateMOI(armLength, {{mass}}), // Kolun durması için harcanan gücün momentumu
+     SingleJointedArmSim.estimateMOI(armLength, {{mass}}), // Atalet momenti (moment of inertia)
      armLength, // Kol uzunluğu (m)
      ({{hardLimitMinRad}}), // Min açı (rad)
      ({{hardLimitMaxRad}}), // Max açı (rad)
-     true, // Simulate gravity
-     ({{startingPositionRad}}) // Başlangıç Pozisyonu (rad)
+     true, // Yerçekimi simülasyonu
+     ({{startingPositionRad}}) // Başlangıç pozisyonu (rad)
    );
    
    {{#if isSparkController}}
-   // ProfiledPIDController Başlat
-   // Kısıtlamalar için radyandan rotasyona dönüştürme
+   // ProfiledPIDController'ı başlat
+   // Kısıtlamalar için radyandan rotasyona dönüştür
    double maxVelocityRotations = maxVelocity / (2.0 * Math.PI);
    double maxAccelerationRotations = maxAcceleration / (2.0 * Math.PI);
    
@@ -109,9 +109,8 @@ public class {{subsystemName}} extends SubsystemBase {
  
  {{#if isSparkController}}
  /**
-  * Sabit frekansta çalışan kontrol döngüsü fonksiyonu.
-  * Bu, SparkMAX ve SparkFlex kontrolörlerinin uygulaması için kullanılır.
-  * ana robot döngüsü dışındaki kapalı döngü kontrolü.
+  * Sabit frekansta çalışan kontrol döngüsü
+  * Bu; SparkMax ve SparkFlex kontrolcülerini ana robot döngüsü dışında, kapalı-döngü içinde yerine getirmek amacıyla kullanılır.
   */
  private void controlLoopFn() {
    switch (currentControlMode) {
@@ -131,20 +130,20 @@ public class {{subsystemName}} extends SubsystemBase {
        double armAngle = getPositionRadians();
        double velFeedforwardOutput = feedforward.calculate(armAngle, targetVelocity, accel);
        
-       // Birleştirilmiş PID çıkışını ve ileri beslemeyi motora uygulaması.
+       // Birleşmiş PID çıkışını ve feedforward'ını motora uygular
        double velocityVoltage = velOutput + velFeedforwardOutput;
        motor.setVoltage(velocityVoltage);
        break;
        
      case OPEN_LOOP:
      default:
-       // Hiçbir şey yapmayın, voltaj doğrudan ayarlanır.
+       // Açık döngü modunda bir şey yapma, voltaj doğrudan ayarlanır
        break;
    }
  }
  
  /**
-  * Subsistem yok edildiğinde kaynakları temizleyin.
+  * Alt sistem kapatıldığında kaynakları temizleyin
   */
   public void close() {
      motor.close();
@@ -153,7 +152,7 @@ public class {{subsystemName}} extends SubsystemBase {
  {{/if}}
  
  /**
-  * Simülasyon ve Telemetriyi günceller
+  * Simülasyon ve telemetriyi günceller
   */
  @Override
  public void periodic() {
@@ -198,14 +197,14 @@ public class {{subsystemName}} extends SubsystemBase {
   @Logged(name = "Position/Rotations")
   {{/if}}
 public double getPosition() {
-  // Rotations
+  // Rotasyonlar
   {{{getPositionMethod}}}
 }
 
 {{#if (or (eq positionUnit 'Degrees') (eq positionUnit 'Radians'))}}
 /**
- * Şuanki pozisyonu {{positionUnit}} alır.
- * @return {{positionUnit}}.
+ * Mevcut konumu {{positionUnit}} cinsinden alır.
+ * @return {{positionUnit}} cinsinden konum
  */
   {{#if logPosition}}
   @Logged(name = "Position/{{positionUnit}}")
@@ -242,8 +241,8 @@ public double getVoltage() {
 }
 
 /**
- * Get the current motor current.
- * @return Motor current in amps
+ * Mevcut motor akımını alır.
+ * @return Motor akımı (amper cinsinden)
  */
   {{#if logCurrent}}
   @Logged(name = "Current")
@@ -274,19 +273,19 @@ public double getTemperature() {
  /**
   * Hızlanma ile kol açısını ayarlayın.
   * @param angleDegrees Hedef açı, derece cinsinden
-  * @param ivme Radyan/Saniye² cinsinden ivme
+  * @param acceleration İvme, radyan/saniye² cinsinden
   */
  public void setAngle(double angleDegrees, double acceleration) {
-   // Dereceden açıya dönüştürür.
+   // Dereceyi radyana dönüştürür
    double angleRadians = Units.degreesToRadians(angleDegrees);
    double positionRotations = angleRadians / (2.0 * Math.PI);
    
    {{#if isSparkController}}
-   // ProfiledPIDController kullanır
+   // ProfiledPIDController kullanılır
    targetPosition = positionRotations;
    currentControlMode = ControlMode.POSITION;
    
-   // Hızlanma belirtilirse, kısıtlamaları güncelleyin
+   // Hızlanma belirtilirse, kısıtlamaları günceller
    if (acceleration > 0) {
      double maxAccelRotations = acceleration / (2.0 * Math.PI);
      constraints = new TrapezoidProfile.Constraints(constraints.maxVelocity, maxAccelRotations);
@@ -299,7 +298,7 @@ public double getTemperature() {
  
  /**
   * Kol açısal hızını ayarla.
-  * @param velocityDegPerSec saniye başına derece cinsinden Hedef Hız
+  * @param velocityDegPerSec Hedef hız, saniye başına derece cinsinden
   */
  public void setVelocity(double velocityDegPerSec) {
    setVelocity(velocityDegPerSec, 0);
@@ -307,16 +306,16 @@ public double getTemperature() {
  
  /**
   * Kolların açısal hızını ivme ile ayarla.
-  * @param velocityDegPerSec saniye başına derece cinsinden hedef hız
-  * @param acceleration saniye başına derece kare cinsinden İvme
+  * @param velocityDegPerSec Hedef hız, saniye başına derece cinsinden
+  * @param acceleration İvme, saniye başına derece kare cinsinden
   */
  public void setVelocity(double velocityDegPerSec, double acceleration) {
-   // Derece/Saniye'yi Açı/Saniye'ye dönüştür
+   // Derece/saniye'yi radyan/saniye'ye dönüştür
    double velocityRadPerSec = Units.degreesToRadians(velocityDegPerSec);
    double velocityRotations = velocityRadPerSec / (2.0 * Math.PI);
    
    {{#if isSparkController}}
-   // ProfiledPIDController kullanır
+   // ProfiledPIDController kullanılır
    targetVelocity = velocityRotations;
    currentControlMode = ControlMode.VELOCITY;
    
@@ -328,7 +327,7 @@ public double getTemperature() {
    }
    
    // Hızı doğrudan motor kontrol cihazına da uygular
-   // Bu, kontrol döngüsü onu iyileştirirken anında tepki verilmesini sağlar.
+   // Bu, kontrol döngüsü onu iyileştirirken anında tepki verilmesini sağlar
    double armAngle = getPositionRadians();
    double ffVolts = feedforward.calculate(armAngle, velocityRotations, 0);
    motor.setVoltage(ffVolts);
@@ -373,7 +372,7 @@ public double getTemperature() {
  public Command moveToAngleCommand(double angleDegrees) {
    return run(() -> {
      {{#if isSparkController}}
-     // Konumu ayarlayın ve profilli denetleyicinin bunu halletmesine izin verin.
+     // Konumu ayarlayın ve profilli kontrolörün bunu halletmesine izin verin
      setAngle(angleDegrees);
      {{else}}
      double currentAngle = Units.radiansToDegrees(getPositionRadians());
@@ -383,7 +382,7 @@ public double getTemperature() {
      {{/if}}
    }).until(() -> {
      double currentAngle = Units.radiansToDegrees(getPositionRadians());
-     return Math.abs(angleDegrees - currentAngle) < 2.0; // 2 degree tolerance
+     return Math.abs(angleDegrees - currentAngle) < 2.0; // 2 derece tolerans
    }).finallyDo((interrupted) -> setVelocity(0));}
  
  /**

@@ -25,10 +25,10 @@ private final MechanismRoot2d root;
 private final MechanismLigament2d elevatorMech;
 
 // Görselleştirme sabitleri
-private final double VISUAL_WIDTH = 10.0; // Width of visualization in pixels
-private final double BASE_HEIGHT = 20.0; // Height of base in pixels
-private final double CARRIAGE_WIDTH = 30.0; // Width of elevator carriage in pixels
-private final double CARRIAGE_HEIGHT = 40.0; // Height of elevator carriage in pixels
+private final double VISUAL_WIDTH = 10.0; // Görselleştirme genişliği (piksel)
+private final double BASE_HEIGHT = 20.0; // Taban yüksekliği (piksel)
+private final double CARRIAGE_WIDTH = 30.0; // Elevator kabini genişliği (piksel)
+private final double CARRIAGE_HEIGHT = 40.0; // Elevator kabini yüksekliği (piksel)
 
 // Elevator parametreleri
 private final double minHeight;
@@ -47,11 +47,11 @@ public {{subsystemName}}Sim({{subsystemName}} elevatorSubsystem) {
   minHeight = elevator.getMinHeightMeters();
   maxHeight = elevator.getMaxHeightMeters();
   
-  // Görselleştirmeyi makul sınırlar içinde tutmak için ölçek faktörünü hesaplayın
+  // Görselleştirmeyi makul sınırlar içinde tutmak için ölçek faktörünü hesaplar
   double elevatorTravel = maxHeight - minHeight;
-  visualScaleFactor = 300.0 / elevatorTravel; // Scale to ~300 pixels max
+  visualScaleFactor = 300.0 / elevatorTravel; // Maksimum ~300 piksel'e ölçeklendirir
   
-// Simülasyon ekranını oluşturun
+// Simülasyon ekranını oluşturur
   mech = new Mechanism2d(400, 400);
   root = mech.getRoot("ElevatorRoot", 200, 50);
   
@@ -67,7 +67,7 @@ public {{subsystemName}}Sim({{subsystemName}} elevatorSubsystem) {
   elevatorMech = root.append(
       new MechanismLigament2d("Elevator", BASE_HEIGHT, 90, CARRIAGE_WIDTH, new Color8Bit(Color.kBlue)));
   
-  // Görselleştirmeyi Başlaşlat
+  // Görselleştirmeyi başlat
   SmartDashboard.putData("Elevator Sim", mech);
 }
 

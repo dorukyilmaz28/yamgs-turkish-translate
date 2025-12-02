@@ -20,7 +20,7 @@ import java.util.function.DoubleSupplier;
 {{{motorControllerImports}}}
 
 /**
- * {{motorControllerType}} iler {{motorType}} Elevator Subsistem
+ * {{motorControllerType}} ile {{motorType}} Elevator Alt Sistemi
  */
 @Logged(name = "{{ntKey}}")
 public class {{subsystemName}} extends SubsystemBase {
@@ -39,8 +39,8 @@ public class {{subsystemName}} extends SubsystemBase {
   private final double maxAcceleration = {{maxAcceleration}}; // Saniye kare başına Metre [m/s²]
   private final boolean brakeMode = {{brakeMode}};
  {{#if enableSoftLimits}}
-  private final double forwardSoftLimit = {{forwardSoftLimit}}; // Maksimum açı (metre)
-  private final double reverseSoftLimit = {{reverseSoftLimit}}; // Minumum açı (metre)
+  private final double forwardSoftLimit = {{forwardSoftLimit}}; // Maksimum yükseklik (metre)
+  private final double reverseSoftLimit = {{reverseSoftLimit}}; // Minimum yükseklik (metre)
  {{/if}}
   private final boolean enableStatorLimit = {{enableStatorLimit}};
   private final int statorCurrentLimit = {{statorCurrentLimit}};
@@ -51,7 +51,7 @@ public class {{subsystemName}} extends SubsystemBase {
   private final double maxheight = 1;
 
   
-  // Feedforward *******************************************************************************************************************************************************************************************
+  // İleri besleme
   private final ElevatorFeedforward feedforward = new ElevatorFeedforward(kS, kG, kV, kA);
   
   // Motor kontrolcü
@@ -68,7 +68,7 @@ public class {{subsystemName}} extends SubsystemBase {
   private double targetPosition = 0.0;
   private double targetVelocity = 0.0;
   
-  // Profiled PID Controller ********************************************************************************************************************************************************************************
+  // Profiled PID Controller
   private ProfiledPIDController profiledPIDController;
   private TrapezoidProfile.Constraints constraints;
   {{/if}}
@@ -77,27 +77,27 @@ public class {{subsystemName}} extends SubsystemBase {
   private final ElevatorSim elevatorSim;
   
   /**
-   * Yeni elevator subsystem oluşturma
+   * Yeni elevatör alt sistemi oluşturur
    */
   public {{subsystemName}}() {
-    // Motor kontrolcüleri tanımlama
+    // Motor kontrolcüleri başlatır/tanımlar
     {{{motorControllerInitialization}}}
     
-    // Simülasyonu başlatma
+    // Simülasyonu başlat
     elevatorSim = new ElevatorSim(
       dcMotor, // Motor tipi
       gearRatio,
       {{mass}}, // Taşınan ağırlık (kg)
-      drumRadius, // Drum radius (m) ***********************************************************************************************************************************************************************************
-      {{hardLimitMin}}, // Minumum yükseklik (m)
+      drumRadius, // Dişli yarıçapı (m)
+      {{hardLimitMin}}, // Minimum yükseklik (m)
       {{hardLimitMax}}, // Maksimum yükseklik (m)
-      true, // Yerçekimi simülesi
-      {{startingHeight}} // Başlangıç yükseklisi (m)
+      true, // Yerçekimi simülasyonu
+      {{startingHeight}} // Başlangıç yüksekliği (m)
     );
     
     {{#if isSparkController}}
-    // Initialize ProfiledPIDController *******************************************************************************************************************************************************************************
-    // Kısıtlamalar için metreyi dönüşe dönüştürür
+    // ProfiledPIDController'ı başlat
+    // Kısıtlamalar için metreyi rotasyona dönüştür
     double maxVelocityRotations = maxVelocity / (2.0 * Math.PI * drumRadius);
     double maxAccelerationRotations = maxAcceleration / (2.0 * Math.PI * drumRadius);
     
@@ -109,8 +109,7 @@ public class {{subsystemName}} extends SubsystemBase {
   {{#if isSparkController}}
   /**
    * Sabit frekansta çalışan kontrol döngüsü
-   * SparkMAX ve SparkFlex kontrolcülerini uygulamak
-   * Ana robot döngüsü dışında kapalı döngü
+   * Bu; SparkMax ve SparkFlex kontrolcülerini ana robot döngüsü dışında, kapalı-döngü içinde yerine getirmek amacıyla kullanılır.
    */
   private void controlLoopFn() {
     switch (currentControlMode) {
@@ -128,14 +127,14 @@ public class {{subsystemName}} extends SubsystemBase {
         double accel = profiledPIDController.getSetpoint().velocity - currentVel;
         double velFeedforwardOutput = feedforward.calculate(targetVelocity, accel);
         
-        // Apply the combined PID output and feedforward to the motor **************************************************************************************************************************************************
+        // Birleşmiş PID çıkışını ve feedforward'ını motora uygular
         double velocityVoltage = velOutput + velFeedforwardOutput;
         motor.setVoltage(velocityVoltage);
         break;
         
       case OPEN_LOOP:
       default:
-        // Bir şey yapma, voltaj kendini ayarlar
+        // Açık döngü modunda bir şey yapma, voltaj doğrudan ayarlanır
         break;
     }
   }
@@ -149,7 +148,7 @@ public class {{subsystemName}} extends SubsystemBase {
   {{/if}}
   
   /**
-   * Simulasyon ve telemetriyi güncelle
+   * Simülasyon ve telemetriyi günceller
    */
   @Override
   public void periodic() {
@@ -160,11 +159,11 @@ public class {{subsystemName}} extends SubsystemBase {
   }
   
   /**
-   * Simulasyonu güncelle
+   * Simülasyonu günceller
    */
   @Override
   public void simulationPeriodic() {
-    // Metreden dönüş oranı
+    // Metre-Rotasyon oranı
     double positionToRotations = (1 / (2.0 * Math.PI * drumRadius)) * gearRatio;
 
     // Motor kontrolöründen simülasyona giriş voltajını ayarlayın
@@ -176,14 +175,14 @@ public class {{subsystemName}} extends SubsystemBase {
    // TalonFX simülasyon girişi için motor voltajını kullanın
    elevatorSim.setInput(motor.getSimState().getMotorVoltage());
    {{else}}
-   // Diğer denetleyiciler için getVoltage() işlevini kullanır
+   // Diğer kontrolcüler için getVoltage() kullanır
    elevatorSim.setInput(getVoltage());
    {{/if}}
     
     // Simülasyonu 20 ms ile günceller
     elevatorSim.update(0.020);
 
-    // Metreleri Motor açısına çevirir
+    // Metreleri motor rotasyonuna çevirir
     double motorPosition = elevatorSim.getPositionMeters() * positionToRotations;
     double motorVelocity = elevatorSim.getVelocityMetersPerSecond() * positionToRotations;
 
@@ -200,7 +199,7 @@ public class {{subsystemName}} extends SubsystemBase {
    @Logged(name = "Position/Rotations")
    {{/if}}
   public double getPosition() {
-    // Rotations
+    // Rotasyonlar
       {{{getPositionMethod}}}
   }
 
@@ -279,11 +278,11 @@ public double getPosition{{positionUnit}}() {
    * @param acceleration İvme (metre kare başına saniye cinsinden)
    */
   public void setPosition(double position, double acceleration) {
-    // Convert meters to rotations
+    // Metreyi rotasyona çevirir
     double positionRotations = position / (2.0 * Math.PI * drumRadius);
     
     {{#if isSparkController}}
-    // Use the ProfiledPIDController
+    // ProfiledPIDController kullanılır
     targetPosition = positionRotations;
     currentControlMode = ControlMode.POSITION;
     
@@ -312,7 +311,7 @@ public double getPosition{{positionUnit}}() {
    * @param acceleration İvme, metre/saniye kare cinsinden
    */
   public void setVelocity(double velocity, double acceleration) {
-    // Metre/saniye'yi açı/saniye'yi dönüştür
+    // Metre/saniye'yi rotasyon/saniye'ye dönüştür
     double velocityRotations = velocity / (2.0 * Math.PI * drumRadius);
     
     {{#if isSparkController}}
@@ -320,7 +319,7 @@ public double getPosition{{positionUnit}}() {
     targetVelocity = velocityRotations;
     currentControlMode = ControlMode.VELOCITY;
     
-    // Hızlanma belirtilirse, kısıtlamaları güncelleyin
+    // Hızlanma belirtilirse, kısıtlamaları günceller
     if (acceleration > 0) {
       double maxAccelRotations = acceleration / (2.0 * Math.PI * drumRadius);
       constraints = new TrapezoidProfile.Constraints(constraints.maxVelocity, maxAccelRotations);
@@ -375,7 +374,7 @@ public double getPosition{{positionUnit}}() {
   public Command moveToHeightCommand(double heightMeters) {
     return run(() -> {
       {{#if isSparkController}}
-      // Sadece konumu ayarlayın ve profilli kontrolörün halletmesine izin verin.
+      // Sadece konumu ayarlayın ve profilli kontrolörün halletmesine izin verin
       setPosition(heightMeters);
       {{else}}
       double currentHeight = getPosition() * (2.0 * Math.PI * drumRadius);
@@ -385,7 +384,7 @@ public double getPosition{{positionUnit}}() {
       {{/if}}
     }).until(() -> {
       double currentHeight = getPosition() * (2.0 * Math.PI * drumRadius);
-      return Math.abs(heightMeters - currentHeight) < 0.02; // 2cm tolerance
+      return Math.abs(heightMeters - currentHeight) < 0.02; // 2cm tolerans
     });
   }
   

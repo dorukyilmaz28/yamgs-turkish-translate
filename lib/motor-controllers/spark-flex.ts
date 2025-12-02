@@ -17,11 +17,11 @@ export const getInitialization = () => `SparkFlexConfig motorConfig = new SparkF
 motor = new SparkFlex(canID, MotorType.kBrushless);
 motorConfig.idleMode(brakeMode ? IdleMode.kBrake : IdleMode.kCoast);
 
-// Configure encoder
+// Encoder'ı konfigüre eder
 encoder = motor.getEncoder();
 encoder.setPosition(0);
 
-// Set ramp rates
+// Ramp oranlarını ayarlar
 {{#if enableOpenLoopRamp}}
   motorConfig.openLoopRampRate(openLoopRampRate);
 {{/if}}
@@ -30,12 +30,12 @@ encoder.setPosition(0);
 {{/if}}
 
 {{#if enableStatorLimit}}
-//Set current limits
+// Mevcut limitleri ayarlar
  motorConfig.smartCurrentLimit(statorCurrentLimit);
 {{/if}}
 
 {{#if enableSoftLimits}}
-// Set soft limits
+// Yumuşak limitleri ayarlar
   motorConfig
   .softLimit
   .forwardSoftLimit(forwardSoftLimit)
@@ -44,7 +44,7 @@ encoder.setPosition(0);
   .reverseSoftLimitEnabled(true);
 {{/if}}
 
-// Save configuration
+// Konfigürasyonu kaydeder
 motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 motorSim = new SparkSim(motor, dcMotor);`
 

@@ -34,7 +34,7 @@ private final double PIVOT_WIDTH = 6.0;
 public {{subsystemName}}Sim({{subsystemName}} pivotSubsystem) {
   this.pivot = pivotSubsystem;
   
- // Simülasyon ekranını oluşturun
+ // Simülasyon ekranını oluşturur
   mech = new Mechanism2d(300, 300);
   root = mech.getRoot("PivotRoot", 150, 150);
   
@@ -60,7 +60,7 @@ public void periodic() {
   double currentAngleRad = pivot.getSimulation().getAngleRad();
   pivotMech.setAngle(Units.radiansToDegrees(currentAngleRad));
   
-  // Telemetri verilerini ayarla
+  // Telemetri verilerini ekler
   SmartDashboard.putNumber("Pivot Angle (deg)", Units.radiansToDegrees(currentAngleRad));
   SmartDashboard.putNumber("Pivot Velocity (deg/s)", Units.radiansToDegrees(pivot.getSimulation().getVelocityRadPerSec()));
   SmartDashboard.putNumber("Pivot Current (A)", pivot.getSimulation().getCurrentDrawAmps());

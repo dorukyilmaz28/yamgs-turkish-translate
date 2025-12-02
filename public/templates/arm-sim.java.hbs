@@ -38,17 +38,17 @@ private final double visualScaleFactor;
 public {{subsystemName}}Sim({{subsystemName}} armSubsystem) {
   this.arm = armSubsystem;
   
-  // Subsistemden Kol Uzunluğu al (in meters)
+  // Alt sistemden kol uzunluğunu alır (metre cinsinden)
   armLength = {{armLength}};
   
-  // Görselleştirmeyi makul sınırlar içinde tutmak için ölçek faktörünü hesaplayın
-  visualScaleFactor = 200.0 / armLength; // ~200 pixel kadar büyütür
+  // Görselleştirmeyi makul sınırlar içinde tutmak için ölçek faktörünü hesaplar
+  visualScaleFactor = 200.0 / armLength; // ~200 piksel kadar büyütür
   
-  // Simülasyon Ekranı Yaratır
+  // Simülasyon ekranını oluşturur
   mech = new Mechanism2d(400, 400);
   root = mech.getRoot("ArmRoot", 200, 200);
   
-  // Kol tabanı yaratır
+  // Kol tabanını oluşturur
   MechanismLigament2d armBase = root.append(
       new MechanismLigament2d("Base", BASE_WIDTH, 0, BASE_HEIGHT, new Color8Bit(Color.kDarkGray)));
   
@@ -70,11 +70,11 @@ public {{subsystemName}}Sim({{subsystemName}} armSubsystem) {
 
 @Override
 public void periodic() {
-  // Update arm angle
+  // Kol açısını güncelle
   double currentAngleRad = arm.getSimulation().getAngleRad();
   armMech.setAngle(Units.radiansToDegrees(currentAngleRad));
   
-  // Telemetri Datasını Ekler
+  // Telemetri verilerini ekler
   SmartDashboard.putNumber("Arm Angle (deg)", Units.radiansToDegrees(currentAngleRad));
   SmartDashboard.putNumber("Arm Velocity (deg/s)", Units.radiansToDegrees(arm.getSimulation().getVelocityRadPerSec()));
   SmartDashboard.putNumber("Arm Current (A)", arm.getSimulation().getCurrentDrawAmps());
