@@ -74,7 +74,7 @@ export default function GeneratedCodePanel({
   if (!files.length) {
     return (
       <Card className="p-6 text-center">
-        <p>Henüz kod oluşturulmadı. Oluşturulan kodu görmek için formu doldurun.</p>
+        <p>Formu doldurup 'Oluştur' düğmesine bastıktan sonra, üretilen kod burada görünecektir.</p>
       </Card>
     );
   }

@@ -220,7 +220,7 @@ export default function MechanismForm({ form }: { form: UseFormReturn<any> }) {
               />
 
               <div className="space-y-2">
-                <Label>Ramp Oranları (saniye)</Label>
+                <Label>Ramp Süresi (saniye)</Label>
                 <FormDescription className="text-sm text-muted-foreground mb-2">
                   Motorun tam güce/hıza ulaşma süresini kontrol eder.
                 </FormDescription>
@@ -230,7 +230,7 @@ export default function MechanismForm({ form }: { form: UseFormReturn<any> }) {
                     name="rampRates.openLoop"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Açık Döngü Ramp Süresi</FormLabel>
+                        <FormLabel>Joystick → Motor geçiş süresi (saniye)</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -252,7 +252,7 @@ export default function MechanismForm({ form }: { form: UseFormReturn<any> }) {
                     name="rampRates.closedLoop"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Kapalı Döngü Ramp Süresi</FormLabel>
+                        <FormLabel>PID/Hız kontrolü geçiş süresi (saniye)</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -289,7 +289,7 @@ export default function MechanismForm({ form }: { form: UseFormReturn<any> }) {
                             onChange={(e) => handleNumberChange(e, field.onChange)}
                           />
                         </FormControl>
-                        <FormDescription>Motor sargılarından geçen gerçek akımı sınırlar → torku da sınırlar.</FormDescription>
+                        <FormDescription>Motor sargılarındaki maksimum akımı sınırlar (A), bu da maksimum torku sınırlar.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
