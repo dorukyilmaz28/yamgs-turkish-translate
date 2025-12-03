@@ -285,13 +285,13 @@ export default function SimulationComponent({ formValues, simType, motorCount }:
       </div>
 
       <div className="text-sm text-muted-foreground mt-4">
-        <p>Bu simülasyon, mekanizma davranışını görselleştirmek için WPILib kontroller simülasyon kütüphanesini kullanır.</p>
+        <p>Bu simülasyon, mekanizmanın hareketlerini görselleştirmek için WPILib'in simülasyon kütüphanesini kullanır.</p>
         <p>
-          Simülasyon parametreleri form girdilerinizden ve motor sayısından ({motorCount} motor) türetilir.
+          Simülasyon parametreleri, formunuzdaki girdiler ve kullanılan motor sayısına ({motorCount} motor) göre otomatik olarak hesaplanır.
         </p>
-        <p>Kaydırıcıyı kullanarak hedef {simType === "position" ? "konumu" : "hızı"} ayarlayın.</p>
+        <p>Hedef {simType === "position" ? "konumu" : "hızı"} değiştirmek için kaydırıcıyı kullanabilirsiniz.</p>
         <p>
-          <strong>Sıfırla butonu</strong> ana formdaki tüm son değişiklikleri uygular.
+          <strong>"Sıfırla" butonu</strong>, ana formdaki tüm son değişiklikleri varsayılan ayarlara geri döndürür.
         </p>
       </div>
     </div>
